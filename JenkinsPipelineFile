@@ -1,0 +1,41 @@
+pipeline {
+    agent {
+        docker {
+            image 'node:20-alpine'
+        }
+    }
+    stages {
+        stage('Building') {
+            steps {
+                sh 'npm install -g firebase-tools'
+            }
+        }
+        stage('Testing') {
+            steps {
+                withCredentials([string(credentialsId: 'firebase-token', variable: 'FIREBASE_TOKEN')]) {
+                    sh '''
+                        firebase deploy -P final-exam-test-9c479 --token "$FIREBASE_TOKEN"
+                    '''
+                }
+            }
+        }
+        stage('Staging') {
+            steps {
+                withCredentials([string(credentialsId: 'firebase-token', variable: 'FIREBASE_TOKEN')]) {
+                    sh '''
+                        firebase deploy -P final-exam-stage --token "$FIREBASE_TOKEN"
+                    '''
+                }
+            }
+        }
+        stage('Production') {
+            steps {
+                withCredentials([string(credentialsId: 'firebase-token', variable: 'FIREBASE_TOKEN')]) {
+                    sh '''
+                        firebase deploy -P final-exam-production --token "$FIREBASE_TOKEN"
+                    '''
+                }
+            }
+        }
+    }
+}
